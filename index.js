@@ -13,7 +13,7 @@ const client = redis.createClient({
 client.on("error", function(error) {
     console.error(error);
 });
-
+let countValue = 0;
 
 app.use(express.json());
 
@@ -22,14 +22,20 @@ app.post('/track', (req, res) => {
         if (err) throw err;
         res.send('Saved!');
         if (req.body.hasOwnProperty('count')) {
-            client.set("count", req.body.count, redis.print);
+            countValue +=req.body.count
+            client.set("count", countValue, redis.print);
         }
     });
 });
 
+function showValue(value){
+    return value;
+}
+
 app.get('/count', (req, res) => {
     /*Zde je třeba zavolat redis, aby vrátil hodnotu klíče count*/
-    let countValue = client.get("count", redis.print);
-    res.send(countValue);
+   client.get("count", function(err, reply) {
+       res.send("Count value is: " + showValue(reply));
+    })
 });
 app.listen(3000, () => console.log('Listening on port 3000...'));
