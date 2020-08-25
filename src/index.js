@@ -1,7 +1,6 @@
-const express = require('express');
-const app = express();
 const fs = require('fs');
 const redis = require("redis");
+const server = require('./server.js');
 
 
 const client = redis.createClient({
@@ -15,9 +14,10 @@ client.on("error", function(error) {
 });
 let countValue = 0;
 
-app.use(express.json());
+server.parseJson();
+server.start();
 
-app.post('/track', (req, res) => {
+server.apiPost('/track', (req, res) => {
     fs.appendFile('log.txt', JSON.stringify(req.body), function (err) {
         if (err) throw err;
         res.send('Saved!');
@@ -28,14 +28,8 @@ app.post('/track', (req, res) => {
     });
 });
 
-function showValue(value){
-    return value;
-}
-
-app.get('/count', (req, res) => {
-    /*Zde je třeba zavolat redis, aby vrátil hodnotu klíče count*/
+server.apiGet('/count', (req, res) => {
    client.get("count", function(err, reply) {
-       res.send("Count value is: " + showValue(reply));
+       res.send("Current count value is: " + reply);
     })
 });
-app.listen(3000, () => console.log('Listening on port 3000...'));
