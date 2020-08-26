@@ -48,12 +48,17 @@ module.exports = {
     },
 
     getRedisValue: async (key, res) => {
-        await client.get(key, (err, reply) => {
-            if(reply)
-            res.send(`Current "${key}" value is: ${reply}`);
-            else
-                res.send(`"${key}" doesn´t exist`);
-            if(err) throw new Error(err);
-        })
+        let getRedisValue = new Promise ((resolve, reject)=> {
+            client.get(key, (err, reply) => {
+                if(reply)
+                resolve(reply);
+                else
+                reject(`Key "${key}" does not exist`)
+            })
+        });
+        let result = await getRedisValue;
+        if (result){
+        res.send(`Current "${key}" value is: ${result}`)
+        }
     },
 };

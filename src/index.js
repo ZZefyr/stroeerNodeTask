@@ -19,5 +19,14 @@ server.apiPost('/clear/:key', (req, res) => {
 
 /* Api GET - get count value*/
 server.apiGet('/count', (req, res) => {
-    db.getRedisValue('count', res)
+    db.getRedisValue('count', res).then(handleResult).catch(handleError)
 });
+
+function handleError(reason) {
+    console.error('error', reason);
+}
+
+function handleResult(result) {
+    console.log('done', result);
+}
+
