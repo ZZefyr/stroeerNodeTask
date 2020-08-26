@@ -1,6 +1,7 @@
 const redis = require("redis");
 
 const client = redis.createClient({
+/*ToDo Vytáhnout do env*/
     port: 10547,
     host: 'redis-10547.c80.us-east-1-2.ec2.cloud.redislabs.com',
     password: 'P7XOZmP8pNU79AtJPWrHxTqzB2gsR1wi'
@@ -42,7 +43,7 @@ module.exports = {
 
     getRedisValue: (key, res) => {
         client.get(key, (err, reply) => {
-            res.send("Current count value is: " + reply);
+            res.send(`Current "${key}" value is: ${reply}`);
         })
     },
 };
