@@ -12,7 +12,7 @@ client.on("error", (error) => {
 });
 
 module.exports = {
-    clearRedisValue: async (req, res) => {
+    clearRedisValue: (req, res) => {
         const key = req.params.key;
         getRedisValue(key)
             .then(() => {
