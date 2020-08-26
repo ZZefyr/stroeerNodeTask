@@ -13,10 +13,10 @@ client.on("error", (error) => {
 
 
 module.exports = {
-    clearRedisValue: (req, res) => {
+    clearRedisValue: async (req, res) => {
         const key = req.params.key;
         const resetValue = 0;
-        client.get(key, (err, reply) => {
+        await client.get(key, (err, reply) => {
             if (reply) {
                 client.set(key, resetValue, function (err, success) {
                     if (success)
@@ -29,21 +29,31 @@ module.exports = {
         })
     },
 
-    increaseRedisValue: (key, req, res) => {
+    increaseRedisValue: async (key, req, res) => {
         if (req.body.hasOwnProperty(key)) {
-            client.get(key, (err, reply) => {
-                let reqCountValue = Number(req.body[key]);
-                let countValue = Number(reply);
-                countValue += reqCountValue;
-                client.set(key, countValue, redis.print);
-                res.send(`Value was increased by ${reqCountValue}`);
+            await client.get(key, (err, reply) => {
+                if (err) throw new Error(err);
+                else {
+                    const reqCountValue = Number(req.body[key]);
+                    let countValue = Number(reply);
+                    countValue += reqCountValue;
+                    client.set(key, countValue, redis.print);
+                    res.send(`Value was increased by ${reqCountValue}`);
+                }
             });
+        }
+        else {
+            res.send(`Saved`);
         }
     },
 
-    getRedisValue: (key, res) => {
-        client.get(key, (err, reply) => {
+    getRedisValue: async (key, res) => {
+        await client.get(key, (err, reply) => {
+            if(reply)
             res.send(`Current "${key}" value is: ${reply}`);
+            else
+                res.send(`"${key}" doesn´t exist`);
+            if(err) throw new Error(err);
         })
     },
 };
