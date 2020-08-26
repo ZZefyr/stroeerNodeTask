@@ -1,7 +1,7 @@
 const redis = require("redis");
 
 const client = redis.createClient({
-/*ToDo Vytáhnout do env*/
+    /*ToDo Vytáhnout do env*/
     port: 10547,
     host: 'redis-10547.c80.us-east-1-2.ec2.cloud.redislabs.com',
     password: 'P7XOZmP8pNU79AtJPWrHxTqzB2gsR1wi'
@@ -11,54 +11,82 @@ client.on("error", (error) => {
     console.error(error);
 });
 
-
 module.exports = {
     clearRedisValue: async (req, res) => {
         const key = req.params.key;
-        const resetValue = 0;
-        await client.get(key, (err, reply) => {
-            if (reply) {
-                client.set(key, resetValue, function (err, success) {
-                    if (success)
-                        res.send(`Value was cleared`);
-                    else
-                        res.send(`Value wasn't cleared ${err}`);
-                });
-            }
-            else res.send(`Key ${key} doesn't exist`);
-        })
-    },
-
-    increaseRedisValue: async (key, req, res) => {
-        if (req.body.hasOwnProperty(key)) {
-            await client.get(key, (err, reply) => {
-                if (err) throw new Error(err);
-                else {
-                    const reqCountValue = Number(req.body[key]);
-                    let countValue = Number(reply);
-                    countValue += reqCountValue;
-                    client.set(key, countValue, redis.print);
-                    res.send(`Value was increased by ${reqCountValue}`);
-                }
+        getRedisValue(key)
+            .then(() => {
+                clearRedisValue(key,0).then(()=>{res.send(`"${key}" value was cleared`)})
+            }).catch((error) => {
+                res.send(error)
+            })
+            .catch((error) => {
+                res.send(error)
             });
-        }
-        else {
+        },
+
+    increaseRedisValue:  (key, req, res) => {
+        if (req.body.hasOwnProperty(key)) {
+            getRedisValue(key)
+                .then((redisValue) => {
+                    increaseRedisValue(key, redisValue, Number(req.body[key])).then((value) => {
+                        res.send(`Value was increased by ${value}`);
+                    }).catch((error) => {
+                        res.send(error)
+                    });
+                }).catch((error) => {
+                    res.send(error)
+                });
+        } else {
             res.send(`Saved`);
         }
     },
 
-    getRedisValue: async (key, res) => {
-        let getRedisValue = new Promise ((resolve, reject)=> {
-            client.get(key, (err, reply) => {
-                if(reply)
-                resolve(reply);
-                else
-                reject(`Key "${key}" does not exist`)
-            })
+    getRedisValue: (key, res) => {
+        getRedisValue(key).then(redisValue => {
+            res.send(`Current "${key}" value is: ${redisValue}`)
+        }).catch((error) => {
+            res.send(error)
         });
-        let result = await getRedisValue;
-        if (result){
-        res.send(`Current "${key}" value is: ${result}`)
-        }
     },
 };
+
+function clearRedisValue(key,value) {
+    return new Promise((resolve, reject) => {
+        client.set(key, value, (err, success) => {
+            if (success) {
+                resolve(value)
+            } else {
+                reject(`ERROR: For "${key}" wasn't cleared value`)
+            }
+        })
+    })
+}
+
+function increaseRedisValue(key, value, reqValue) {
+    return new Promise((resolve, reject) => {
+        const reqCountValue = reqValue;
+        let countValue = value;
+        countValue += reqCountValue;
+        client.set(key, countValue, (err, success) => {
+            if (success) {
+                resolve(value)
+            } else {
+                reject(`ERROR: For "${key}" wasn't increased value "${value}"`)
+            }
+        })
+    })
+}
+
+function getRedisValue(key) {
+    return new Promise((resolve, reject) => {
+        client.get(key, (err, reply) => {
+            if (reply) {
+                resolve(Number(reply));
+            } else {
+                reject(`ERROR: Key "${key}" does not exist`)
+            }
+        })
+    })
+}
+
