@@ -4,7 +4,7 @@
   "description": "api working with redis db",
   "main": "src/index.js",
   "scripts": {
-    "start-win": "SET SERVER_PORT=3000& SET REDIS_PORT=10547& SET REDIS_HOST=redis-10547.c80.us-east-1-2.ec2.cloud.redislabs.com& SET REDIS_PW=P7XOZmP8pNU79AtJPWrHxTqzB2gsR1wi& nodemon src/index.js",
+    "start-win": "SET SERVER_PORT=3000& SET REDIS_PORT=10547& SET REDIS_HOST=redis-10547.c80.us-east-1-2.ec2.cloud.redislabs.com& SET REDIS_PW=P7XOZmP8pNU79AtJPWrHxTqzB2gsR1wi& node src/index.js",
     "start-linux": "SERVER_PORT=3000 REDIS_PORT=10547 REDIS_HOST=redis-10547.c80.us-east-1-2.ec2.cloud.redislabs.com& REDIS_PW=P7XOZmP8pNU79AtJPWrHxTqzB2gsR1wi node src/index.js"
   },
   "dependencies": {

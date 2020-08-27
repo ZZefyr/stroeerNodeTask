@@ -1,6 +1,6 @@
 const server = require('./server.js');
 const db = require('./database.js');
-
+const logger = require('./logger.js');
 
 
 server.start();
@@ -9,6 +9,8 @@ server.parseJson();
 /* Api POST - count value*/
 server.apiPost('/track', (req, res) => {
     db.increaseRedisValue('count', req, res);
+    logger.saveLog(req, 'log.txt');
+    logger.saveJsonData(req, 'data.json');
 });
 
 /* Api POST - clear value*/

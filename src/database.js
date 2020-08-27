@@ -1,4 +1,3 @@
-const logger = require('./logger.js');
 const redis = require("redis");
 const REDIS_PORT = process.env.REDIS_PORT;
 const REDIS_HOST = process.env.REDIS_HOST;
@@ -28,12 +27,11 @@ module.exports = {
         if (req.body.hasOwnProperty(key)) {
             getSavedValue(key)
                 .then((redisValue) => increaseRedisValue(key, redisValue, Number(req.body[key]))
-                    .then((value) => {res.send(`Value was increased by ${value}`); saveRecords(req);})
+                    .then((value) => res.send(`Value was increased by ${value}`))
                     .catch((error) => res.send(error)))
                 .catch((error) => res.send(error));
         } else {
             res.send("Data saved");
-            saveRecords(req);
         }
     },
 
@@ -81,10 +79,5 @@ function getSavedValue(key) {
             }
         })
     })
-}
-
-function saveRecords(req) {
-    logger.saveLog(req, 'log.txt');
-    logger.saveJsonData(req, 'data.json');
 }
 
