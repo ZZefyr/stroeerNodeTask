@@ -11,11 +11,14 @@ module.exports = {
         verifyIfJsonFileExists(file)
             //if yes, save JSON data and catch errors
             .then(()=>saveJson(reqData, file)
+                .then(()=>console.log("JSON record was saved"))
                 .catch((err)=>console.log(err)))
             //if JSON file doesn't exist, create it
             .catch(()=>createJsonFile(file)
                 //save JSON data and catch errors
+                .catch((err)=>console.log(err))
                 .then(()=>saveJson(reqData, file)
+                    .then(()=>console.log("JSON record was saved"))
                     .catch((err)=>console.log(err)))
                 .catch((err)=>console.log(err))
             )
