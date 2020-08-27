@@ -1,8 +1,8 @@
+const logger = require('./logger.js');
 const redis = require("redis");
-
 const REDIS_PORT = process.env.REDIS_PORT;
 const REDIS_HOST = process.env.REDIS_HOST;
-const REDIS_PW =  process.env.REDIS_PW;
+const REDIS_PW = process.env.REDIS_PW;
 
 const client = redis.createClient({
     port: REDIS_PORT,
@@ -17,44 +17,34 @@ client.on("error", (error) => {
 module.exports = {
     clearRedisValue: (req, res) => {
         const key = req.params.key;
-        getRedisValue(key)
-            .then(() => {
-                clearRedisValue(key,0).then(()=>{res.send(`"${key}" value was cleared`)})
-            }).catch((error) => {
-                res.send(error)
-            })
-            .catch((error) => {
-                res.send(error)
-            });
-        },
+        getSavedValue(key)
+            .then(() => clearRedisValue(key, 0)
+                .then(() => res.send(`"${key}" value was cleared`))
+                .catch((error) => res.send(error)))
+            .catch((error) => res.send(error))
+    },
 
-    increaseRedisValue:  (key, req, res) => {
+    increaseRedisValue: (key, req, res) => {
         if (req.body.hasOwnProperty(key)) {
-            getRedisValue(key)
-                .then((redisValue) => {
-                    increaseRedisValue(key, redisValue, Number(req.body[key])).then((value) => {
-                        res.send(`Value was increased by ${value}`);
-                    }).catch((error) => {
-                        res.send(error)
-                    });
-                }).catch((error) => {
-                    res.send(error)
-                });
+            getSavedValue(key)
+                .then((redisValue) => increaseRedisValue(key, redisValue, Number(req.body[key]))
+                    .then((value) => {res.send(`Value was increased by ${value}`); saveRecords(req);})
+                    .catch((error) => res.send(error)))
+                .catch((error) => res.send(error));
         } else {
-            res.send(`Saved`);
+            res.send("Data saved");
+            saveRecords(req);
         }
     },
 
     getRedisValue: (key, res) => {
-        getRedisValue(key).then(redisValue => {
-            res.send(`Current "${key}" value is: ${redisValue}`)
-        }).catch((error) => {
-            res.send(error)
-        });
+        getSavedValue(key)
+            .then(redisValue => res.send(`Current "${key}" value is: ${redisValue}`))
+            .catch((error) => res.send(error))
     },
 };
 
-function clearRedisValue(key,value) {
+function clearRedisValue(key, value) {
     return new Promise((resolve, reject) => {
         client.set(key, value, (err, success) => {
             if (success) {
@@ -73,15 +63,15 @@ function increaseRedisValue(key, value, reqValue) {
         countValue += reqCountValue;
         client.set(key, countValue, (err, success) => {
             if (success) {
-                resolve(countValue)
+                resolve(reqValue)
             } else {
-                reject(`ERROR: For "${key}" wasn't increased value "${countValue}"`)
+                reject(`ERROR: For "${key}" wasn't increased value "${reqValue}"`)
             }
         })
     })
 }
 
-function getRedisValue(key) {
+function getSavedValue(key) {
     return new Promise((resolve, reject) => {
         client.get(key, (err, reply) => {
             if (reply) {
@@ -91,5 +81,10 @@ function getRedisValue(key) {
             }
         })
     })
+}
+
+function saveRecords(req) {
+    logger.saveLog(req, 'log.txt');
+    logger.saveJsonData(req, 'data.json');
 }
 

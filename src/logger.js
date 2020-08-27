@@ -1,59 +1,60 @@
 const fs = require('fs');
 module.exports = {
     saveLog : (reqData,file) => {
-        saveLog(reqData,file)
-            .then(()=>console.log("Log record was saved"))
-            .catch((err)=> console.log(err));
+        saveLog(reqData,file);
 
     },
-    saveJsonData : (reqData, file) => {
+    saveJsonData : async (reqData, file) => {
         //check whether JSON file exists
-        verifyIfJsonFileExists(file)
-            //if yes, save JSON data and catch errors
-            .then(()=>saveJson(reqData, file)
-                .then(()=>console.log("JSON record was saved"))
-                .catch((err)=>console.log(err)))
+       verifyIfJsonFileExists(file)
+        //if yes, save JSON data and catch errors
+            .then((file)=>readJson(file).then((data)=>saveJson(file,data,reqData)))
             //if JSON file doesn't exist, create it
             .catch(()=>createJsonFile(file)
-                //save JSON data and catch errors
-                .catch((err)=>console.log(err))
-                .then(()=>saveJson(reqData, file)
-                    .then(()=>console.log("JSON record was saved"))
-                    .catch((err)=>console.log(err)))
-                .catch((err)=>console.log(err))
-            )
+                    .catch((err)=>console.log(err))
+                    .then(()=>saveJson(reqData, file)))
+
     },
 };
 
 function saveLog(reqData, file) {
-    return new Promise((resolve, reject) => {
         const log = fs.createWriteStream(file, {flags: 'a'});
         log.write(`${new Date().toLocaleString()}, Request body:${JSON.stringify(reqData.body)}\n`);
         log.end();
         log.on('finish',  () => {
-            const logFinished = true;
-            resolve(logFinished);
+            console.log("Log has been saved");
         });
         log.on("error", (err => {
-            reject(err);
+            console.log(err);
         }));
+}
+
+async function readJson(file){
+    return new Promise((resolve, reject) => {
+    fs.readFile(file, (err, data) => {
+        if (err) {
+            reject(err)
+        }
+        else {
+            resolve(data)
+        }
+    });
     })
 }
 
-function saveJson(reqData, file) {
+async function saveJson(file, data, reqData) {
     return new Promise((resolve, reject) => {
-        fs.readFile(file, (err, data) => {
-            let json = JSON.parse(data);
-            json.push(reqData.body);
-            fs.writeFile(file, JSON.stringify(json), callback)
-        });
-        let callback = (err) => {
-            if (err) reject(err);
-            else
-                resolve(callback);
-        };
+    let json = JSON.parse(data);
+    json.push(reqData.body);
+    fs.writeFile(file, JSON.stringify(json), (err)=> {
+        if (err) {
+            reject(err)
+        }
+        else {
+            resolve();
+        }
     })
-}
+})}
 
 function verifyIfJsonFileExists(file) {
     return new Promise((resolve, reject) => {
