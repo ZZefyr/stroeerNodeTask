@@ -4,16 +4,13 @@ module.exports = {
         saveLog(reqData,file);
 
     },
-    saveJsonData : async (reqData, file) => {
-        //check whether JSON file exists
-       verifyIfJsonFileExists(file)
-        //if yes, save JSON data and catch errors
-            .then((file)=>readJson(file).then((data)=>saveJson(file,data,reqData)))
-            //if JSON file doesn't exist, create it
-            .catch(()=>createJsonFile(file)
-                    .catch((err)=>console.log(err))
-                    .then(()=>saveJson(reqData, file)))
-
+    saveJsonData : (reqData, file) => {
+            verifyIfJsonFileExists(file)
+                .catch(createJsonFile)
+                .then(readJson).catch(handleError)
+                .then((data)=> saveJson(file,data,reqData)).catch(handleError)
+                .then(()=>console.log('JSON data has been saved'))
+        
     },
 };
 
@@ -29,7 +26,7 @@ function saveLog(reqData, file) {
         }));
 }
 
-async function readJson(file){
+function readJson(file){
     return new Promise((resolve, reject) => {
     fs.readFile(file, (err, data) => {
         if (err) {
@@ -42,7 +39,7 @@ async function readJson(file){
     })
 }
 
-async function saveJson(file, data, reqData) {
+function saveJson(file, data, reqData) {
     return new Promise((resolve, reject) => {
     let json = JSON.parse(data);
     json.push(reqData.body);
@@ -57,7 +54,7 @@ async function saveJson(file, data, reqData) {
 })}
 
 function verifyIfJsonFileExists(file) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve,reject) => {
         fs.access(file, fs.F_OK, (err) => {
             if (err) {
                 reject(file);
@@ -79,4 +76,8 @@ function createJsonFile(file) {
             reject(`${file} Unable to create file`)
         });
     })
+}
+
+function handleError(err) {
+    console.log(err)
 }
