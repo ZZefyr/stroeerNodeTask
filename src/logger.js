@@ -1,17 +1,20 @@
 const fs = require('fs');
 module.exports = {
-    saveLog : (reqData) => {
-        saveLog(reqData)
+    saveLog : (reqData,file) => {
+        saveLog(reqData,file)
             .then(()=>console.log("Log record was saved"))
             .catch((err)=> console.log(err));
 
     },
     saveJsonData : (reqData, file) => {
+        //check whether JSON file exists
         verifyIfJsonFileExists(file)
+            //if yes, save JSON data and catch errors
             .then(()=>saveJson(reqData, file)
                 .catch((err)=>console.log(err)))
-
+            //if JSON file doesn't exist, create it
             .catch(()=>createJsonFile(file)
+                //save JSON data and catch errors
                 .then(()=>saveJson(reqData, file)
                     .catch((err)=>console.log(err)))
                 .catch((err)=>console.log(err))

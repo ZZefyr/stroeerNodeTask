@@ -73,9 +73,9 @@ function increaseRedisValue(key, value, reqValue) {
         countValue += reqCountValue;
         client.set(key, countValue, (err, success) => {
             if (success) {
-                resolve(value)
+                resolve(countValue)
             } else {
-                reject(`ERROR: For "${key}" wasn't increased value "${value}"`)
+                reject(`ERROR: For "${key}" wasn't increased value "${countValue}"`)
             }
         })
     })
