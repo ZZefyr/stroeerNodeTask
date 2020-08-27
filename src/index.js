@@ -8,7 +8,8 @@ server.parseJson();
 
 /* Api POST - count value*/
 server.apiPost('/track', (req, res) => {
-    logger.saveLog(req);
+    logger.saveLog(req, 'log.txt');
+    logger.saveJsonData(req, 'data.json');
     db.increaseRedisValue('count', req, res);
 });
 

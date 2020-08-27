@@ -1,10 +1,13 @@
 const redis = require("redis");
 
+const REDIS_PORT = process.env.REDIS_PORT;
+const REDIS_HOST = process.env.REDIS_HOST;
+const REDIS_PW =  process.env.REDIS_PW;
+
 const client = redis.createClient({
-    /*ToDo Vytáhnout do env*/
-    port: 10547,
-    host: 'redis-10547.c80.us-east-1-2.ec2.cloud.redislabs.com',
-    password: 'P7XOZmP8pNU79AtJPWrHxTqzB2gsR1wi'
+    port: REDIS_PORT,
+    host: REDIS_HOST,
+    password: REDIS_PW
 });
 
 client.on("error", (error) => {
