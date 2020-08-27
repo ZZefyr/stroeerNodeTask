@@ -26,33 +26,6 @@ function saveLog(reqData, file) {
         }));
 }
 
-function readJson(file){
-    return new Promise((resolve, reject) => {
-    fs.readFile(file, (err, data) => {
-        if (err) {
-            reject(err)
-        }
-        else {
-            resolve(data)
-        }
-    });
-    })
-}
-
-function saveJson(file, data, reqData) {
-    return new Promise((resolve, reject) => {
-    let json = JSON.parse(data);
-    json.push(reqData.body);
-    fs.writeFile(file, JSON.stringify(json), (err)=> {
-        if (err) {
-            reject(err)
-        }
-        else {
-            resolve();
-        }
-    })
-})}
-
 function verifyIfJsonFileExists(file) {
     return new Promise((resolve,reject) => {
         fs.access(file, fs.F_OK, (err) => {
@@ -77,6 +50,34 @@ function createJsonFile(file) {
         });
     })
 }
+
+function readJson(file){
+    return new Promise((resolve, reject) => {
+        fs.readFile(file, (err, data) => {
+            if (err) {
+                reject(err)
+            }
+            else {
+                resolve(data)
+            }
+        });
+    })
+}
+
+
+function saveJson(file, data, reqData) {
+    return new Promise((resolve, reject) => {
+        let json = JSON.parse(data);
+        json.push(reqData.body);
+        fs.writeFile(file, JSON.stringify(json), (err)=> {
+            if (err) {
+                reject(err)
+            }
+            else {
+                resolve();
+            }
+        })
+    })}
 
 function handleError(err) {
     console.log(err)
