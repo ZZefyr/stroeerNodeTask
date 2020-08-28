@@ -17,7 +17,9 @@ client.on("error", (error) => {
 module.exports = {
     clearRedisValue: (req, res) => {
         const key = req.params.key;
+        //verify whether key, which should be cleared exists in redis
         getSavedValue(key)
+        //if key exists, clear - set 0 as a value
             .then(() => clearRedisValue(key)
                 .then(() => res.send(`"${key}" value was cleared`))
                 .catch((error) => {
@@ -32,7 +34,9 @@ module.exports = {
 
     increaseRedisValue: (key, req, res) => {
         if (req.body.hasOwnProperty(key)) {
+            //verify whether key, which should be increased exists in redis and get its value
             getSavedValue(key)
+              //if key/value exists save value into variable called redis value and sum with requested value
                 .then((redisValue) => increaseRedisValue(key, redisValue, Number(req.body[key]))
                     .then((value) => res.send(`Value was increased by ${value}`))
                     .catch((error) => {
@@ -59,6 +63,7 @@ module.exports = {
 
     closeRedisConnection: () => {
         return new Promise((resolve,reject)=>{
+            //set value back to 0 and close connection to redis
             clearRedisValue('count',0)
                 .then(client.quit((err) => {
                     if (err)

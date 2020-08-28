@@ -20,15 +20,15 @@ module.exports = {
 };
 
 function saveReqLog(reqData,logfile) {
-        const log = fs.createWriteStream(logfile, {flags: 'a'});
-        log.write(`${new Date().toLocaleString()}, Request body:${JSON.stringify(reqData.body)}\n`);
-        log.end();
-        log.on('finish',  () => {
-            console.log("Log has been saved");
-        });
-        log.on("error", (err => {
-            console.log(err);
-        }));
+    const log = fs.createWriteStream(logfile, {flags: 'a'});
+    log.write(`${new Date().toLocaleString()}, Request body:${JSON.stringify(reqData.body)}\n`);
+    log.end();
+    log.on('finish',  () => {
+        console.log("Log has been saved");
+    });
+    log.on("error", (err => {
+        console.log(err);
+    }));
 }
 
 function saveErrLog(data, logfile) {
@@ -80,7 +80,6 @@ function readJson(file){
         });
     })
 }
-
 
 function saveJsonToFile(file, data, reqData) {
     return new Promise((resolve, reject) => {
