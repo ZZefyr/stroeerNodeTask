@@ -18,7 +18,7 @@ module.exports = {
     clearRedisValue: (req, res) => {
         const key = req.params.key;
         //verify whether key, which should be cleared exists in redis
-        getSavedValue(key)
+        getSavedRedisValue(key)
         //if key exists, clear - set 0 as a value
             .then(() => clearRedisValue(key)
                 .then(() => res.send(`"${key}" value was cleared`))
@@ -34,11 +34,11 @@ module.exports = {
 
     increaseRedisValue: (key, req, res) => {
         if (req.body.hasOwnProperty(key)) {
-            //verify whether key, which should be increased exists in redis and get its value
-            getSavedValue(key)
-              //if key/value exists save value into variable called redis value and sum with requested value
+            //verify whether key, which should be increased, exists in redis and get its value
+            getSavedRedisValue(key)
+              //if key/value exists save value into variable called redisValue and sum with requested value
                 .then((redisValue) => increaseRedisValue(key, redisValue, Number(req.body[key]))
-                    .then((value) => res.send(`Value was increased by ${value}`))
+                    .then((value) => res.send(`Data saved! Value of "${key}" was increased by ${value}`))
                     .catch((error) => {
                         res.send(error);
                         logger.saveErrLog(error)
@@ -53,7 +53,7 @@ module.exports = {
     },
 
     getRedisValue: (key, res) => {
-        getSavedValue(key)
+        getSavedRedisValue(key)
             .then(redisValue => res.send(`Current "${key}" value is: ${redisValue}`))
             .catch((error) => {
                 res.send(error);
@@ -62,14 +62,15 @@ module.exports = {
     },
 
     closeRedisConnection: () => {
-        return new Promise((resolve,reject)=>{
+        return new Promise((resolve, reject) => {
             //set value back to 0 and close connection to redis
-            clearRedisValue('count',0)
+            clearRedisValue('count', 0)
                 .then(client.quit((err) => {
-                    if (err)
-                       reject(err);
-                    else
+                    if (err) {
+                        reject(err);
+                    } else {
                         resolve()
+                    }
                 }));
         })
 
@@ -91,20 +92,24 @@ function clearRedisValue(key) {
 
 function increaseRedisValue(key, value, reqValue) {
     return new Promise((resolve, reject) => {
-        const reqCountValue = reqValue;
-        let countValue = value;
-        countValue += reqCountValue;
-        client.set(key, countValue, (err, success) => {
-            if (success) {
-                resolve(reqValue)
-            } else {
-                reject(`ERROR: For "${key}" wasn't increased value "${reqValue}"`)
-            }
-        })
+        if (!reqValue) {
+            reject(`ERROR: For "${key}" wasn't increased value. You must insert number as a "${key}" parameter value`);
+        } else {
+            const reqCountValue = reqValue;
+            let countValue = value;
+            countValue += reqCountValue;
+            client.set(key, countValue, (err, success) => {
+                if (success) {
+                    resolve(reqValue)
+                } else {
+                    reject(`ERROR: For "${key}" wasn't increased value "${reqValue}". Make sure you put proper number value in "${key}" parameter.`)
+                }
+            })
+        }
     })
 }
 
-function getSavedValue(key) {
+function getSavedRedisValue(key) {
     return new Promise((resolve, reject) => {
         client.get(key, (err, reply) => {
             if (reply) {
