@@ -11,7 +11,7 @@ Run this following comand in terminal to start node server:
 npm run start-linux
 ```
 
-##API calls
+## API calls
 I would recommend to use POSTMAN app
 
 
