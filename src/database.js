@@ -1,3 +1,4 @@
+const logger = require('./logger.js');
 const redis = require("redis");
 const REDIS_PORT = process.env.REDIS_PORT;
 const REDIS_HOST = process.env.REDIS_HOST;
@@ -17,10 +18,16 @@ module.exports = {
     clearRedisValue: (req, res) => {
         const key = req.params.key;
         getSavedValue(key)
-            .then(() => clearRedisValue(key, 0)
+            .then(() => clearRedisValue(key)
                 .then(() => res.send(`"${key}" value was cleared`))
-                .catch((error) => res.send(error)))
-            .catch((error) => res.send(error))
+                .catch((error) => {
+                    res.send(error);
+                    logger.saveErrLog(error)
+                }))
+            .catch((error) =>{
+                res.send(error);
+                logger.saveErrLog(error)
+        })
     },
 
     increaseRedisValue: (key, req, res) => {
@@ -28,8 +35,14 @@ module.exports = {
             getSavedValue(key)
                 .then((redisValue) => increaseRedisValue(key, redisValue, Number(req.body[key]))
                     .then((value) => res.send(`Value was increased by ${value}`))
-                    .catch((error) => res.send(error)))
-                .catch((error) => res.send(error));
+                    .catch((error) => {
+                        res.send(error);
+                        logger.saveErrLog(error)
+                    }))
+                .catch((error) => {
+                    res.send(error);
+                    logger.saveErrLog(error)
+                });
         } else {
             res.send("Data saved");
         }
@@ -38,15 +51,32 @@ module.exports = {
     getRedisValue: (key, res) => {
         getSavedValue(key)
             .then(redisValue => res.send(`Current "${key}" value is: ${redisValue}`))
-            .catch((error) => res.send(error))
+            .catch((error) => {
+                res.send(error);
+                logger.saveErrLog(error)
+            })
     },
+
+    closeRedisConnection: () => {
+        return new Promise((resolve,reject)=>{
+            clearRedisValue('count',0)
+                .then(client.quit((err) => {
+                    if (err)
+                       reject(err);
+                    else
+                        resolve()
+                }));
+        })
+
+    }
 };
 
-function clearRedisValue(key, value) {
+function clearRedisValue(key) {
     return new Promise((resolve, reject) => {
+        const value = 0;
         client.set(key, value, (err, success) => {
             if (success) {
-                resolve(value)
+                resolve()
             } else {
                 reject(`ERROR: For "${key}" wasn't cleared value`)
             }

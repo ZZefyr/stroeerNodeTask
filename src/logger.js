@@ -1,21 +1,26 @@
 const fs = require('fs');
 module.exports = {
-    saveLog : (reqData,file) => {
-        saveLog(reqData,file);
+    saveReqLog : (reqData) => {
+        saveReqLog(reqData, 'requests.log');
 
     },
-    saveJsonData : (reqData, file) => {
-            verifyIfJsonFileExists(file)
-                .catch(createJsonFile)
-                .then(readJson).catch(handleError)
-                .then((data)=> saveJson(file,data,reqData)).catch(handleError)
-                .then(()=>console.log('JSON data has been saved'))
-        
+
+    saveErrLog : (data) => {
+        saveErrLog(data, 'error.log');
+    },
+
+    saveJsonData : (reqData) => {
+        const file = 'data.json';
+        verifyIfJsonFileExists(file)
+            .catch(createJsonFile)
+            .then(readJson).catch(handleError)
+            .then((data)=> saveJsonToFile(file,data,reqData)).catch(handleError)
+            .then(()=>console.log('JSON data has been saved'))
     },
 };
 
-function saveLog(reqData, file) {
-        const log = fs.createWriteStream(file, {flags: 'a'});
+function saveReqLog(reqData,logfile) {
+        const log = fs.createWriteStream(logfile, {flags: 'a'});
         log.write(`${new Date().toLocaleString()}, Request body:${JSON.stringify(reqData.body)}\n`);
         log.end();
         log.on('finish',  () => {
@@ -24,6 +29,18 @@ function saveLog(reqData, file) {
         log.on("error", (err => {
             console.log(err);
         }));
+}
+
+function saveErrLog(data, logfile) {
+    const log = fs.createWriteStream(logfile, {flags: 'a'});
+    log.write(`${new Date().toLocaleString()}, ErrorLog:${data}\n`);
+    log.end();
+    log.on('finish',  () => {
+        console.log("Err log has been saved");
+    });
+    log.on("error", (err => {
+        console.log(err);
+    }));
 }
 
 function verifyIfJsonFileExists(file) {
@@ -65,7 +82,7 @@ function readJson(file){
 }
 
 
-function saveJson(file, data, reqData) {
+function saveJsonToFile(file, data, reqData) {
     return new Promise((resolve, reject) => {
         let json = JSON.parse(data);
         json.push(reqData.body);
