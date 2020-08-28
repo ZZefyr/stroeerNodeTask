@@ -13,7 +13,9 @@ npm run start-linux
 
 ##API calls
 I would recommend to use POSTMAN app
-###1) POST + JSON body
+
+
+### 1) POST + JSON body
 ```
 localhost:3000/track
 ```
@@ -32,14 +34,14 @@ Example of JSON body, which you can send within POST command is:
 But you can post any JSON you want.
 
 
-###2) GET 
+### 2) GET 
 ```
 localhost:3000/count
 ```
 This GET URL above, get data from REDIS db, it returns current value of
 key "count". 
 
-###3) Clearing of count value (POST)
+### 3) Clearing of count value (POST)
 ```
 localhost:3000/clear/count
 ```
